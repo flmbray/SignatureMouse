@@ -1,0 +1,40 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+permissions:
+  contents: write
+
+jobs:
+  build-release:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '8.0.x'
+
+      - name: Publish (win-x64, framework-dependent)
+        run: |
+          dotnet restore
+          dotnet publish SignatureMouse.csproj -c Release -r win-x64 --self-contained false -o publish/win-x64
+
+      - name: Package
+        run: |
+          TAG="${GITHUB_REF#refs/tags/}"
+          OUTDIR="release/SignatureMouse-win-x64-${TAG}"
+          mkdir -p "$OUTDIR"
+          cp -r publish/win-x64/* "$OUTDIR/"
+          cp README.md RELEASE_NOTES.md LICENSE "$OUTDIR/"
+          (cd release && zip -r "SignatureMouse-win-x64-${TAG}.zip" "SignatureMouse-win-x64-${TAG}")
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: release/*.zip
