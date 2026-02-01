@@ -1,0 +1,14 @@
+# Images and vector outputs
+*.jpg
+*.jpeg
+*.png
+*.svg
+
+# .NET build outputs
+bin/
+obj/
+
+# User-specific
+*.user
+*.suo
+*.cache
